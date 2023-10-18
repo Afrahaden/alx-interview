@@ -1,48 +1,39 @@
 #!/usr/bin/python3
 """
-Task - Script that reads stdin line by line and computes metrics
+read stdin line by line and compute metrics
 """
 
 import sys
 
+cache = {"200": 0, "301": 0, "400": 0, "401": 0,
+         "403": 0, "404": 0, "405": 0, "500":0}
 
-if __name__ == "__main__":
-    st_code = {"200": 0,
-               "301": 0,
-               "400": 0,
-               "401": 0,
-               "403": 0,
-               "404": 0,
-               "405": 0,
-               "500": 0}
-    count = 1
-    file_size = 0
+total = 0
+counter = 0
 
-    def parse_line(line):
-        """ Read, parse and grab data"""
-        try:
-            parsed_line = line.split()
-            status_code = parsed_line[-2]
-            if status_code in st_code.keys():
-                st_code[status_code] += 1
-            return int(parsed_line[-1])
-        except Exception:
-            return 0
+try:
+    for l in sys.stdin:
+        l_list = l.split(" ")
+        if len(l_list) > 4:
+            code = l_list[-2]
+            size = int(l_list[-1])
+            if code in cache.keys():
+                cache[code] += 1
+            total += size
+            counter += 1
+        
+        if counter == 10:
+            counter = 0
+            print("File size: {}".format(total))
+            for key, val in sorted(cache.items()):
+                if val != 0:
+                    print("{}: {}".format(key, val))
 
-    def print_stats():
-        """print stats in ascending order"""
-        print("File size: {}".format(file_size))
-        for key in sorted(st_code.keys()):
-            if st_code[key]:
-                print("{}: {}".format(key, st_code[key]))
+except Exception as err:
+    pass
 
-    try:
-        for line in sys.stdin:
-            file_size += parse_line(line)
-            if count % 10 == 0:
-                print_stats()
-            count += 1
-    except KeyboardInterrupt:
-        print_stats()
-        raise
-    print_stats()
+finally:
+    print("File size: {}".format(total))
+    for key, val in sorted(cache.items()):
+        if val != 0:
+            print("{}: {}".format(key, val))
